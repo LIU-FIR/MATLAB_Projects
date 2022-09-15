@@ -112,4 +112,3 @@ plot(frexZ,fftshift(mag2db(abs(Z)./max(abs(Z)))),'bs-','LineWidth',2)
 grid on
 % ylim([-100 5])
 %%
-.
