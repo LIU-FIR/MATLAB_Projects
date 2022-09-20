@@ -65,19 +65,30 @@ S_E_cal_pha = angle(S_E_cal);
 
 %%
 figure(1),clf
-subplot(211),hold on
+% subplot(211),hold on
+hold on
 % plot(fk,S_dB,'k-','linew',2)
-plot(fk,real(S_E),'b-','linew',2)
-plot(fk,real(S_E_cal),'r-','linew',2)
+yyaxis left
+plot(fk,abs(S_E),'b-','linew',2)
+% plot(fk,real(S_E_cal),'r-','linew',2)
 % plot(fk,imag(S_E),'r-','linew',2)
 % plot(fk,real(S_E_cal),'ms','linew',2)
+plot([fk(ind1) fk(ind1)],[abs(S_E(ind1)) abs(S_E(ind1))],'ko','markersize',6,'markerfacecolor','k','linew',2)
+xlabel('Hz')
+ylabel('Magnitude: (a.u.)')
+yyaxis right
+plot(fk,S_E_pha,'r-','linew',2)
+ylabel('Phase: (rad)')
 yrange = get(gca,'ylim');
 xrange = get(gca,'xlim');
-plot([fk(ind0) fk(ind0)],[yrange(1) yrange(2)],'k-','linew',2)
-plot([xrange(1) xrange(2)],[0 0],'k-','linew',2)
-subplot(212),hold on
-plot(fk,S_E_pha,'k-','linew',2)
-plot(fk,S_E_cal_pha,'m-','linew',2)
+plot([fk(ind1) fk(ind1)],[yrange(1) yrange(2)],'k--','linew',2)
+plot([fk(ind1) fk(ind1)],[S_E_pha(ind1) S_E_pha(ind1)],'ko','markersize',6,'markerfacecolor','k','linew',2)
+
+% plot([xrange(1) xrange(2)],[0 0],'k-','linew',2)
+grid on
+% subplot(212),hold on
+
+% plot(fk,S_E_cal_pha,'m-','linew',2)
 % plot(fk,S_E_cal_pha-S_E_pha,'b-','linew',2)
 
 %%
