@@ -105,11 +105,15 @@ figure(2),clf
 hold on
 plot(real(S_ms),imag(S_ms),'b.')
 grid on, hold on, axis square
+set(gca,'xlim',[0 1.2],'ylim',[-.6 .6])
 plot(get(gca,'xlim'),[0 0],'k','linew',1)
 plot([0 0],get(gca,'ylim'),'k','linew',1)
 plot(real(S_ms(idx_fr)),imag(S_ms(idx_fr)),'kx','markersize',8,'markerfacecolor','r','linew',2)
-plot(real(S_ms(idx_ftone)),imag(S_ms(idx_ftone)),'rx','markersize',8,'markerfacecolor','r','linew',2)
+plot(real(S_ms(idx_ftone)),imag(S_ms(idx_ftone)),'rx','markersize',10,'markerfacecolor','r','linew',2)
 
+plot([real(S_ms(idx_ftone+10)) real(S_ms(idx_ftone+10))],[imag(S_ms(idx_ftone+10)) imag(S_ms(idx_ftone+10))],'ms','markersize',8,'linew',2)
+plot([real(S_ms(idx_ftone-10)) real(S_ms(idx_ftone-10))],[imag(S_ms(idx_ftone-10)) imag(S_ms(idx_ftone-10))],'ms','markersize',8,'linew',2)
+plot([real(S_ms(idx_ftone-10)) real(S_ms(idx_ftone+10))],[imag(S_ms(idx_ftone-10)) imag(S_ms(idx_ftone+10))],'m-','linew',2)
 
 figure(3),clf
 hold on
