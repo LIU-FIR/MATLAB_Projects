@@ -1,10 +1,10 @@
 clear;clc;close all;
 
-Fs          = 2.4e6;
-Flms        = 16e3;
-n_harmonics = 3;
-delay       = 22; % defined by system delay (filter, cryo, etc.) 
-gain        = 1e-2;
+Fs          = 2.4e6; % sampling rate
+Flms        = 16e3; % the fundemental frequency determined by flux ramp modulation.
+n_harmonics = 3; % use n_harmonics to approximate modulated fres.
+delay       = 0; % defined by system delay (filter, cryo, etc.) 
+gain        = 1e-2; % user defined closed-loop gain
 %%
 % Integrator 
 ol          = tf([1], [1 -1], 1/Fs);

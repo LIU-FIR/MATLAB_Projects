@@ -3,17 +3,17 @@
 %
 
 clear;clc;
-
+%%
 Qi = 348000;
 Qc = 43000;
 % Qi = 41000;
 % Qc = 129000;
-df1 = 10e3; % Hz % asymmetry
+df1 = 10e3; % Hz % asymmetry, resonance frequency deviation.
 df = 0;
 Qr = 1/(1/Qi+1/Qc);
 % Qr = 17000;
 % Qc = 20000;
-fr = 5e9; % resonance frequency
+fr = 5e9; % original resonance frequency
 % fc = 1.3e9; % carrier frequency
 % eta_offset = -0.05 + 0.1i;
 
@@ -39,20 +39,21 @@ loss = .75^0.5;
 % S_21_m = exp(1i*theta).*S_21*loss;
 S_ms_dB = mag2db(abs(S_ms));
 S_ms_pha = angle(S_ms);
-idx_fr = find(abs(S)==min(abs(S)));
-idx_ftone = find(abs(S_ms)==min(abs(S_ms)));
+idx_ftone = find(abs(S)==min(abs(S))); % ftone is set at the original resonance frequency.
+idx_fres = find(abs(S_ms)==min(abs(S_ms))); % shifted resonance frequency.
 
-phi_cal = -angle(S_ms(idx_ftone));
+phi_cal = -angle(S_ms(idx_fres));
 F_cal = exp(1i*phi_cal);
 
 S_ms = F_cal*S_ms; % calibration to quadrature axis.
 S_dB = mag2db(abs(S));
 S_pha = angle(S);
 
-%%
-Eta = (fk(idx_ftone+1)-fk(idx_ftone-1))./(S_ms(idx_ftone+1)-S_ms(idx_ftone-1));
-Eta1 = (fk(idx_fr+1)-fk(idx_fr-1))./(S_ms(idx_fr+1)-S_ms(idx_fr-1));
-Eta2 = (fk(idx_ftone+1)-fk(idx_ftone-1))./imag(S_ms(idx_ftone+1)-S_ms(idx_ftone-1));
+%
+Eta = (fk(idx_fres+1)-fk(idx_fres-1))./(S_ms(idx_fres+1)-S_ms(idx_fres-1));
+disp(['Eta = ',num2str(Eta)]);
+Eta1 = (fk(idx_ftone+1)-fk(idx_ftone-1))./(S_ms(idx_ftone+1)-S_ms(idx_ftone-1));
+Eta2 = (fk(idx_fres+1)-fk(idx_fres-1))./imag(S_ms(idx_fres+1)-S_ms(idx_fres-1));
 
 S_E_cal = Eta*S_ms;%/max(abs(Eta));
 S_E_cal1 = Eta1*S_ms;%/max(abs(Eta));
@@ -62,9 +63,9 @@ S_E_cal_dB = mag2db(abs(S_E_cal));
 S_E_cal_pha = angle(S_E_cal);
 
 
-Df_est = real(Eta*S_ms(idx_fr));
-Df_est1= real(Eta1*S_ms(idx_fr));
-Df_est2 = imag(Eta2*S_ms(idx_fr));
+Df_est = real(Eta*S_ms(idx_ftone));
+Df_est1= real(Eta1*S_ms(idx_ftone));
+Df_est2 = imag(Eta2*S_ms(idx_ftone));
 disp([Df_est df1 Df_est1 Df_est2])
 
 %%
@@ -77,7 +78,7 @@ plot(fk,abs(S_ms),'b-','linew',2)
 % plot(fk,real(S_E_cal),'r-','linew',2)
 % plot(fk,imag(S_E),'r-','linew',2)
 % plot(fk,real(S_E_cal),'ms','linew',2)
-plot([fk(idx_ftone) fk(idx_ftone)],[abs(S_ms(idx_ftone)) abs(S_ms(idx_ftone))],'ko','markersize',6,'markerfacecolor','k','linew',2)
+plot([fk(idx_fres) fk(idx_fres)],[abs(S_ms(idx_fres)) abs(S_ms(idx_fres))],'ko','markersize',6,'markerfacecolor','k','linew',2)
 xlabel('Hz')
 ylabel('Magnitude: (a.u.)')
 yyaxis right
@@ -85,8 +86,8 @@ plot(fk,S_ms_pha,'r-','linew',2)
 ylabel('Phase: (rad)')
 yrange = get(gca,'ylim');
 xrange = get(gca,'xlim');
-plot([fk(idx_ftone) fk(idx_ftone)],[yrange(1) yrange(2)],'k--','linew',2)
-plot([fk(idx_ftone) fk(idx_ftone)],[S_ms_pha(idx_ftone) S_ms_pha(idx_ftone)],'ko','markersize',6,'markerfacecolor','k','linew',2)
+plot([fk(idx_fres) fk(idx_fres)],[yrange(1) yrange(2)],'k--','linew',2)
+plot([fk(idx_fres) fk(idx_fres)],[S_ms_pha(idx_fres) S_ms_pha(idx_fres)],'ko','markersize',6,'markerfacecolor','k','linew',2)
 
 % plot([xrange(1) xrange(2)],[0 0],'k-','linew',2)
 grid on
@@ -108,12 +109,12 @@ grid on, hold on, axis square
 set(gca,'xlim',[0 1.2],'ylim',[-.6 .6])
 plot(get(gca,'xlim'),[0 0],'k','linew',1)
 plot([0 0],get(gca,'ylim'),'k','linew',1)
-plot(real(S_ms(idx_fr)),imag(S_ms(idx_fr)),'kx','markersize',8,'markerfacecolor','r','linew',2)
-plot(real(S_ms(idx_ftone)),imag(S_ms(idx_ftone)),'rx','markersize',10,'markerfacecolor','r','linew',2)
+plot(real(S_ms(idx_ftone)),imag(S_ms(idx_ftone)),'kx','markersize',8,'markerfacecolor','r','linew',2)
+plot(real(S_ms(idx_fres)),imag(S_ms(idx_fres)),'rx','markersize',10,'markerfacecolor','r','linew',2)
 
-plot([real(S_ms(idx_ftone+10)) real(S_ms(idx_ftone+10))],[imag(S_ms(idx_ftone+10)) imag(S_ms(idx_ftone+10))],'ms','markersize',8,'linew',2)
-plot([real(S_ms(idx_ftone-10)) real(S_ms(idx_ftone-10))],[imag(S_ms(idx_ftone-10)) imag(S_ms(idx_ftone-10))],'ms','markersize',8,'linew',2)
-plot([real(S_ms(idx_ftone-10)) real(S_ms(idx_ftone+10))],[imag(S_ms(idx_ftone-10)) imag(S_ms(idx_ftone+10))],'m-','linew',2)
+plot([real(S_ms(idx_fres+10)) real(S_ms(idx_fres+10))],[imag(S_ms(idx_fres+10)) imag(S_ms(idx_fres+10))],'ms','markersize',8,'linew',2)
+plot([real(S_ms(idx_fres-10)) real(S_ms(idx_fres-10))],[imag(S_ms(idx_fres-10)) imag(S_ms(idx_fres-10))],'ms','markersize',8,'linew',2)
+plot([real(S_ms(idx_fres-10)) real(S_ms(idx_fres+10))],[imag(S_ms(idx_fres-10)) imag(S_ms(idx_fres+10))],'m-','linew',2)
 
 figure(3),clf
 hold on
@@ -130,14 +131,14 @@ plot(get(gca,'xlim'),[0 0],'k','linew',1)
 plot([0 0],get(gca,'ylim'),'k','linew',1)
 % plot(real(S(ctr_idx)),imag(S(ctr_idx)),'rx','markersize',8,'markerfacecolor','r','linew',2)
 % plot(real(S_E(ctr_idx)),imag(S_E(ctr_idx)),'kx','markersize',8,'markerfacecolor','r','linew',2)
-plot(real(S_E_cal(idx_fr)),imag(S_E_cal(idx_fr)),'kx','markersize',8,'markerfacecolor','r','linew',2)
-plot(real(S_E_cal(idx_ftone)),imag(S_E_cal(idx_ftone)),'rx','markersize',8,'markerfacecolor','r','linew',2)
+plot(real(S_E_cal(idx_ftone)),imag(S_E_cal(idx_ftone)),'kx','markersize',8,'markerfacecolor','r','linew',2)
+plot(real(S_E_cal(idx_fres)),imag(S_E_cal(idx_fres)),'rx','markersize',8,'markerfacecolor','r','linew',2)
 
 % plot(real(S_E_cal1(idx_fr)),imag(S_E_cal1(idx_fr)),'kx','markersize',8,'markerfacecolor','r','linew',2)
 % plot(real(S_E_cal1(idx_ftone)),imag(S_E_cal1(idx_ftone)),'rx','markersize',8,'markerfacecolor','r','linew',2)
 
-plot(real(S_E_cal2(idx_fr)),imag(S_E_cal2(idx_fr)),'kx','markersize',8,'markerfacecolor','r','linew',2)
-plot(real(S_E_cal2(idx_ftone)),imag(S_E_cal2(idx_ftone)),'rx','markersize',8,'markerfacecolor','r','linew',2)
+plot(real(S_E_cal2(idx_ftone)),imag(S_E_cal2(idx_ftone)),'kx','markersize',8,'markerfacecolor','r','linew',2)
+plot(real(S_E_cal2(idx_fres)),imag(S_E_cal2(idx_fres)),'rx','markersize',8,'markerfacecolor','r','linew',2)
 
 
 %%
