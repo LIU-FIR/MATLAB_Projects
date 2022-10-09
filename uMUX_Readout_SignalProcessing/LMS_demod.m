@@ -1,8 +1,8 @@
 clear;clc;close all;
-
+%%
 srate          = 2.4e6; % sampling rate
 flms        = 16e3; % the fundemental frequency determined by flux ramp modulation.
-n_harmonics = 8; % use n_harmonics to approximate modulated fres.
+n_harmonics = 6; % use n_harmonics to approximate modulated fres.
 delay       = 0; % defined by system delay (filter, cryo, etc.) 
 mu        = 1e-2; % user defined closed-loop gain
 %
@@ -17,8 +17,6 @@ D_squid  = lambda*sin(2*pi*flms*tn)./(1 + lambda*sin(2*pi*flms*tn));
 N = 2*n_harmonics+1;
 alpha = zeros(1,N);
 y = zeros(1,numel(n));
-
-% s_tst = harmonics_gen(n_harmonics,flms,srate,1);
 
 for i = 0:numel(n)-1
     idx = i+1; % array index
@@ -41,9 +39,5 @@ plot(D_squid,'k-','linew',1)
 plot(y,'b.-','linew',1)
 xlim([0 1500])
 subplot(212)
-% hold on
-% yyaxis left
 plot(D_squid-y,'r-','linew',1)
-% yyaxis right
-% plot((D_squid-y)./D_squid,'m-','linew',1)
 %
