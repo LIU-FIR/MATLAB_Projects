@@ -11,7 +11,7 @@ fres = 5e9; % original resonance frequency
 
 
 BW = 100e3; % Yu SLAC Microresonator RF (SMuRF) Electronics, P8, CMB umux resonators bandwidth
-fstep = 5e2; % computational frequency interval/step.
+fstep = 5e1; % computational frequency interval/step.
 f = fres-BW/2*10:fstep:fres+BW/2*10; % computational frequency range, fres is central frequency. 
 fzc = f-fres; % move fres to zero frequency,
 %
@@ -31,11 +31,22 @@ S_ms_cal = Eta.*S_ms*1i;% calibrated S21 to vertical axis, Eta is a rotated vect
 S_ms_cal_v = Eta.*S_ms; % calibrated S21 to horizontal axis, Eta is a rotated vector.
 
 Df_est = imag(S_ms_cal(idx_ftone));
-disp([Df_est fzc(idx_ftone)])
+Df_est1 = imag((1-Qr/Qc*1./(1+1i*2*Qr*(fzc(idx_ftone))./fres)).*exp(1i*pi/8)*Eta*1i);
+disp([Df_est fzc(idx_ftone) Df_est1])
+
+fres_offset = -fstep*100;
+S_ms_fresOffset = (1-Qr/Qc*1./(1+1i*2*Qr*((f-fres_offset)-fres)./fres)).*exp(1i*pi/8);
+figure(1),clf
+hold on
+% plot(fzc,abs(S_ms),'b.-','linew',1)
+plot(fzc,abs(S_ms_fresOffset),'m.-','linew',1)
+plot(fzc(find(f==fres)),abs(S_ms_fresOffset(find(f==fres))),'kx')
+xlim([-2e5 2e5])
+
 %%
 srate = 2.4e6; % sampling rate
 flms  = 16e3; % the fundemental frequency determined by flux ramp modulation.
-n_horder = 6; % use n_harmonics to approximate modulated fres.
+n_horder = 3; % use n_harmonics to approximate modulated fres.
 delay  = 0; % defined by system delay (filter, cryo, etc.) 
 mu = 1e-2; % user defined closed-loop gain
 %
@@ -48,38 +59,52 @@ D_squid  = lambda*sin(2*pi*flms*tn)./(1 + lambda*sin(2*pi*flms*tn));
 B = fpp./(max(D_squid)-min(D_squid));
 f_squid = B*D_squid;
 
-figure(1),clf
-plot(f_squid,'k-','linew',1)
-xlim([0 1500])
+% figure(2),clf
+% plot(f_squid,'k-','linew',1)
+% xlim([0 1500])
 %%
 % LMS filter
 M = 2*n_horder+1;
 alpha = zeros(M,1);
-y = zeros(1,numel(n));
+fy = zeros(1,numel(n)); % LMS filter output
 
 
 for i = 0:numel(n)-1
     idx = i+1; % array index
-%     s_i = [sin(2*pi*flms/srate*i),cos(2*pi*flms/srate*i),...
-%         sin(2*pi*flms*2/srate*i),cos(2*pi*flms*2/srate*i),...
-%         sin(2*pi*flms*3/srate*i),cos(2*pi*flms*3/srate*i),1];
     s_i = harmonics_gen(n_horder,flms,srate,i);
-    y(idx) = dot(alpha,s_i);
-    
-    % use dsearchn(fzc',y(idx)) to get idx_ftone, and e_i = imag(S_ms_cal(idx_ftone))
-    e_i = D_squid(idx) - y(idx);
+%     if idx==1
+%         y(idx)=imag(S_ms_cal(idx_ftone));
+%     else
+%         y(idx) = dot(alpha,s_i);
+%     end
+    fy(idx) = dot(alpha,s_i);    
+%     idx_f = dsearchn(fzc',y(idx));
+    e_i = imag((1-Qr/Qc*1./(1+1i*2*Qr*(f_squid(idx))./fres)).*exp(1i*pi/8)*Eta*1i)- fy(idx);
+%     e_i = f_squid(idx) - fy(idx);
     alpha = alpha + mu*e_i*s_i';   
 end
 %%
-err = D_squid-y;
+err = f_squid-fy;
 err_rms = rms(err(2000:end));
 err_mean = mean(err(2000:end));
 figure(2),clf
 subplot(211)
 hold on
-plot(D_squid,'k-','linew',1)
-plot(y,'b.-','linew',1)
-xlim([0 1500])
+plot(f_squid,'k-','linew',1)
+plot(fy,'b.-','linew',1)
+xlabel('Sampling pts')
+ylabel('Tracking SQUID frequency [Hz]')
+xlim([0 2000])
 subplot(212)
-plot(D_squid-y,'r-','linew',1)
-%
+plot(f_squid-fy,'r-','linew',1)
+xlabel('Sampling pts')
+ylabel('Frequency error [Hz]')
+xlim([0 2000])
+
+
+%%
+figure(3),clf
+plot(f_squid,'k-','linew',1)
+xlabel('Sampling pts')
+ylabel('SQUID frequency [Hz]')
+xlim([0 1500])
